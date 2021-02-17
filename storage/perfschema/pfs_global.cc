@@ -65,38 +65,15 @@ void *pfs_malloc(PFS_builtin_memory_class *klass, size_t size, myf flags)
   void *ptr= NULL;
 
 #ifdef PFS_ALIGNEMENT
-#ifdef HAVE_POSIX_MEMALIGN
-  /* Linux */
-  if (unlikely(posix_memalign(& ptr, PFS_ALIGNEMENT, size)))
-    return NULL;
-#else
-#ifdef HAVE_MEMALIGN
-  /* Solaris */
-  ptr= memalign(PFS_ALIGNEMENT, size);
-  if (unlikely(ptr == NULL))
-    return NULL;
-#else
-#ifdef HAVE_ALIGNED_MALLOC
-  /* Windows */
-  ptr= _aligned_malloc(size, PFS_ALIGNEMENT);
-  if (unlikely(ptr == NULL))
-    return NULL;
-#else
-#error "Missing implementation for PFS_ALIGNENT"
-#endif /* HAVE_ALIGNED_MALLOC */
-#endif /* HAVE_MEMALIGN */
-#endif /* HAVE_POSIX_MEMALIGN */
+  ptr= my_malloc_aligned(size, PFS_ALIGNEMENT);
 #else /* PFS_ALIGNMENT */
-  /* Everything else */
   ptr= malloc(size);
+#endif
   if (unlikely(ptr == NULL))
     return NULL;
-#endif
 
   klass->count_alloc(size);
 
-  if (flags & MY_ZEROFILL)
-    memset(ptr, 0, size);
   return ptr;
 }
 
@@ -105,23 +82,11 @@ void pfs_free(PFS_builtin_memory_class *klass, size_t size, void *ptr)
   if (ptr == NULL)
     return;
 
-#ifdef HAVE_POSIX_MEMALIGN
-  /* Allocated with posix_memalign() */
-  free(ptr);
+#ifdef PFS_ALIGNEMENT
+  my_free_aligned(ptr);
 #else
-#ifdef HAVE_MEMALIGN
-  /* Allocated with memalign() */
   free(ptr);
-#else
-#ifdef HAVE_ALIGNED_MALLOC
-  /* Allocated with _aligned_malloc() */
-  _aligned_free(ptr);
-#else
-  /* Allocated with malloc() */
-  free(ptr);
-#endif /* HAVE_ALIGNED_MALLOC */
-#endif /* HAVE_MEMALIGN */
-#endif /* HAVE_POSIX_MEMALIGN */
+#endif
 
   klass->count_free(size);
 }
