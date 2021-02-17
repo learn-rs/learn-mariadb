@@ -55,10 +55,10 @@ static void recursive_free(void **alloc, int level)
     int i;
     for (i= 0; i < LF_DYNARRAY_LEVEL_LENGTH; i++)
       recursive_free(alloc[i], level-1);
-    my_free(alloc);
+    my_free_aligned(alloc);
   }
   else
-    my_free(alloc[-1]);
+    my_free_aligned(alloc[-1]);
 }
 
 void lf_dynarray_destroy(LF_DYNARRAY *array)
@@ -105,14 +105,14 @@ void *lf_dynarray_lvalue(LF_DYNARRAY *array, uint idx)
   {
     if (!(ptr= *ptr_ptr))
     {
-      void *alloc= my_malloc(key_memory_lf_dynarray, LF_DYNARRAY_LEVEL_LENGTH *
-                             sizeof(void *), MYF(MY_WME|MY_ZEROFILL));
+      void *alloc= my_malloc_aligned(LF_DYNARRAY_LEVEL_LENGTH * sizeof(void *),
+                                     sizeof(void *));
       if (unlikely(!alloc))
         return(NULL);
       if (my_atomic_casptr(ptr_ptr, &ptr, alloc))
         ptr= alloc;
       else
-        my_free(alloc);
+        my_free_aligned(alloc);
     }
     ptr_ptr= ((void **)ptr) + idx / dynarray_idxes_in_prev_level[i];
     idx%= dynarray_idxes_in_prev_level[i];
@@ -120,10 +120,9 @@ void *lf_dynarray_lvalue(LF_DYNARRAY *array, uint idx)
   if (!(ptr= *ptr_ptr))
   {
     uchar *alloc, *data;
-    alloc= my_malloc(key_memory_lf_dynarray,
-                     LF_DYNARRAY_LEVEL_LENGTH * array->size_of_element +
-                     MY_MAX(array->size_of_element, sizeof(void *)),
-                     MYF(MY_WME|MY_ZEROFILL));
+    alloc= my_malloc_aligned(LF_DYNARRAY_LEVEL_LENGTH * array->size_of_element +
+                             MY_MAX(array->size_of_element, sizeof(void *)),
+                             sizeof(void *));
     if (unlikely(!alloc))
       return(NULL);
     /* reserve the space for free() address */
@@ -137,7 +136,7 @@ void *lf_dynarray_lvalue(LF_DYNARRAY *array, uint idx)
     if (my_atomic_casptr(ptr_ptr, &ptr, data))
       ptr= data;
     else
-      my_free(alloc);
+      my_free_aligned(alloc);
   }
   return ((uchar*)ptr) + array->size_of_element * idx;
 }
