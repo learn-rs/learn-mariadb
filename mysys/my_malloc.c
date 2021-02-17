@@ -249,3 +249,63 @@ char *my_strndup(PSI_memory_key key, const char *from, size_t length, myf my_fla
   DBUG_RETURN(ptr);
 }
 
+/**
+  Allocate an aligned, sized block of zero initialized memory.
+
+  @param size      The size of the memory block in bytes.
+  @param alignment The alignment of the memory block in bytes.
+  @param flags     Failure action modifiers (bitmasks).
+
+  @return A pointer to the allocated memory block, or NULL on failure.
+*/
+void *my_malloc_aligned(size_t size, size_t alignment)
+{
+  DBUG_ENTER("my_malloc_aligned");
+  DBUG_PRINT("my",("size: %zu align: %zu", size, alignment));
+
+  void *ptr= NULL;
+#ifdef HAVE_POSIX_MEMALIGN
+  /* Linux + BSDs */
+  if (posix_memalign(& ptr, alignment, size))
+    DBUG_RETURN(NULL);
+#elif defined(HAVE_MEMALIGN)
+  /* Solaris */
+  ptr= memalign(alignment, size);
+#elif defined(HAVE_ALIGNED_MALLOC)
+  /* Windows */
+  ptr= _aligned_malloc(size, alignment);
+#else
+  ptr= malloc(size);
+#endif
+  memset(ptr, 0, size);
+
+  DBUG_RETURN(ptr);
+}
+
+/**
+  Free memory allocated with my_malloc_aligned
+
+  @param ptr Pointer to the memory allocated by my_malloc_aligned.
+*/
+void my_free_aligned(void *ptr)
+{
+  DBUG_ENTER("my_free_aligned");
+  DBUG_PRINT("my",("ptr: %p", ptr));
+  if (ptr == NULL)
+    DBUG_VOID_RETURN;
+
+#ifdef HAVE_POSIX_MEMALIGN
+  /* Allocated with posix_memalign() */
+  free(ptr);
+#elif defined(HAVE_MEMALIGN)
+  /* Allocated with memalign() */
+  free(ptr);
+#elif defined(HAVE_ALIGNED_MALLOC)
+  /* Allocated with _aligned_malloc() */
+  _aligned_free(ptr);
+#else
+  /* Allocated with malloc() */
+  free(ptr);
+#endif
+  DBUG_VOID_RETURN;
+}
