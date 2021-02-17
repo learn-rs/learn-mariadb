@@ -3746,7 +3746,7 @@ fil_tablespace_iterate(
 	can determine the page size and zip_size (if it is compressed).
 	We allocate an extra page in case it is a compressed table. */
 
-	byte*	page = static_cast<byte*>(aligned_malloc(2 * srv_page_size,
+	byte*	page = static_cast<byte*>(my_malloc_aligned(2 * srv_page_size,
 							 srv_page_size));
 
 	buf_block_t* block = reinterpret_cast<buf_block_t*>
@@ -3794,12 +3794,12 @@ fil_tablespace_iterate(
 
 		/* Add an extra page for compressed page scratch area. */
 		iter.io_buffer = static_cast<byte*>(
-			aligned_malloc((1 + iter.n_io_buffers)
+			my_malloc_aligned((1 + iter.n_io_buffers)
 				       << srv_page_size_shift, srv_page_size));
 
 		iter.crypt_io_buffer = iter.crypt_data
 			? static_cast<byte*>(
-				aligned_malloc((1 + iter.n_io_buffers)
+				my_malloc_aligned((1 + iter.n_io_buffers)
 					       << srv_page_size_shift,
 					       srv_page_size))
 			: NULL;
@@ -3816,8 +3816,8 @@ fil_tablespace_iterate(
 			fil_space_destroy_crypt_data(&iter.crypt_data);
 		}
 
-		aligned_free(iter.crypt_io_buffer);
-		aligned_free(iter.io_buffer);
+		my_free_aligned(iter.crypt_io_buffer);
+		my_free_aligned(iter.io_buffer);
 	}
 
 	if (err == DB_SUCCESS) {
@@ -3833,7 +3833,7 @@ fil_tablespace_iterate(
 
 	os_file_close(file);
 
-	aligned_free(page);
+	my_free_aligned(page);
 	ut_free(filepath);
 	ut_free(block);
 

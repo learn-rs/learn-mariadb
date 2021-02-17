@@ -511,27 +511,6 @@ buf_page_is_corrupted(
 	ulint			fsp_flags)
 	MY_ATTRIBUTE((warn_unused_result));
 
-inline void *aligned_malloc(size_t size, size_t align)
-{
-#ifdef _MSC_VER
-  return _aligned_malloc(size, align);
-#else
-  void *result;
-  if (posix_memalign(&result, align, size))
-    result= NULL;
-  return result;
-#endif
-}
-
-inline void aligned_free(void *ptr)
-{
-#ifdef _MSC_VER
-  _aligned_free(ptr);
-#else
-  free(ptr);
-#endif
-}
-
 /** Read the key version from the page. In full crc32 format,
 key version is stored at {0-3th} bytes. In other format, it is
 stored in 26th position.
@@ -739,7 +718,7 @@ public:
   {
     if (!crypt_buf)
       crypt_buf= static_cast<byte*>
-      (aligned_malloc(srv_page_size, srv_page_size));
+      (my_malloc_aligned(srv_page_size, srv_page_size));
   }
 };
 
@@ -1844,7 +1823,7 @@ public:
     void create(ulint n);
 
     /** Free the hash table. */
-    void free() { aligned_free(array); array= nullptr; }
+    void free() { my_free_aligned(array); array= nullptr; }
 
     /** @return the index of an array element */
     ulint calc_hash(ulint fold) const { return calc_hash(fold, n_cells); }
@@ -2080,8 +2059,8 @@ private:
     {
       for (buf_tmp_buffer_t *s= slots, *e= slots + n_slots; s != e; s++)
       {
-        aligned_free(s->crypt_buf);
-        aligned_free(s->comp_buf);
+        my_free_aligned(s->crypt_buf);
+        my_free_aligned(s->comp_buf);
       }
       ut_free(slots);
       slots= nullptr;

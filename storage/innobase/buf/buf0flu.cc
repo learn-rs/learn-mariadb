@@ -621,7 +621,7 @@ static void buf_tmp_reserve_compression_buf(buf_tmp_buffer_t* slot)
 #elif defined HAVE_SNAPPY
   size= snappy_max_compressed_length(size);
 #endif
-  slot->comp_buf= static_cast<byte*>(aligned_malloc(size, srv_page_size));
+  slot->comp_buf= static_cast<byte*>(my_malloc_aligned(size, srv_page_size));
 }
 
 /** Encrypt a buffer of temporary tablespace

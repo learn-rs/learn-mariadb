@@ -1628,10 +1628,10 @@ int main(
 	}
 
 
-	buf = static_cast<byte*>(aligned_malloc(UNIV_PAGE_SIZE_MAX,
-						UNIV_PAGE_SIZE_MAX));
-	xdes = static_cast<byte*>(aligned_malloc(UNIV_PAGE_SIZE_MAX,
-						 UNIV_PAGE_SIZE_MAX));
+	buf = static_cast<byte*>(my_malloc_aligned(UNIV_PAGE_SIZE_MAX,
+						   UNIV_PAGE_SIZE_MAX));
+	xdes = static_cast<byte*>(my_malloc_aligned(UNIV_PAGE_SIZE_MAX,
+						    UNIV_PAGE_SIZE_MAX));
 
 	/* The file name is not optional. */
 	for (int i = 0; i < argc; ++i) {
@@ -2022,8 +2022,8 @@ my_exit:
 	}
 
 common_exit:
-	aligned_free(buf);
-	aligned_free(xdes);
+	my_free_aligned(buf);
+	my_free_aligned(xdes);
 	my_end(exit_status);
 	DBUG_RETURN(exit_status);
 }

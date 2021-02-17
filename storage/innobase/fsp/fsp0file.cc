@@ -294,7 +294,7 @@ Datafile::read_first_page(bool read_only_mode)
 	/* Align the memory for a possible read from a raw device */
 
 	m_first_page = static_cast<byte*>(
-		aligned_malloc(UNIV_PAGE_SIZE_MAX, srv_page_size));
+		my_malloc_aligned(UNIV_PAGE_SIZE_MAX, srv_page_size));
 
 	dberr_t		err = DB_ERROR;
 	size_t		page_size = UNIV_PAGE_SIZE_MAX;
@@ -376,7 +376,7 @@ Datafile::read_first_page(bool read_only_mode)
 /** Free the first page from memory when it is no longer needed. */
 void Datafile::free_first_page()
 {
-  aligned_free(m_first_page);
+  my_free_aligned(m_first_page);
   m_first_page= nullptr;
 }
 
@@ -654,7 +654,7 @@ Datafile::find_space_id()
 			<< ". Pages to analyze:" << page_count;
 
 		byte*	page = static_cast<byte*>(
-			aligned_malloc(page_size, page_size));
+			my_malloc_aligned(page_size, page_size));
 
 		ulint fsp_flags;
 		/* provide dummy value if the first os_file_read() fails */
@@ -720,7 +720,7 @@ Datafile::find_space_id()
 			}
 		}
 
-		aligned_free(page);
+		my_free_aligned(page);
 
 		ib::info()
 			<< "Page size: " << page_size

@@ -3640,8 +3640,8 @@ fallback:
 		<< srv_page_size_shift;
 
 	/* Align the buffer for possible raw i/o */
-	byte*	buf = static_cast<byte*>(aligned_malloc(buf_size,
-							srv_page_size));
+	byte*	buf = static_cast<byte*>(my_malloc_aligned(buf_size,
+							   srv_page_size));
 	/* Write buffer full of zeros */
 	memset(buf, 0, buf_size);
 
@@ -3666,7 +3666,7 @@ fallback:
 		current_size += n_bytes;
 	}
 
-	aligned_free(buf);
+	my_free_aligned(buf);
 
 	return(current_size >= size && os_file_flush(file));
 }
@@ -3940,8 +3940,8 @@ static bool is_linux_native_aio_supported()
 
 	memset(&io_event, 0x0, sizeof(io_event));
 
-	byte* ptr = static_cast<byte*>(aligned_malloc(srv_page_size,
-						      srv_page_size));
+	byte* ptr = static_cast<byte*>(my_malloc_aligned(srv_page_size,
+						         srv_page_size));
 
 	struct iocb	iocb;
 
@@ -3969,7 +3969,7 @@ static bool is_linux_native_aio_supported()
 		err = io_getevents(io_ctx, 1, 1, &io_event, NULL);
 	}
 
-	aligned_free(ptr);
+	my_free_aligned(ptr);
 	my_close(fd, MYF(MY_WME));
 
 	switch (err) {
@@ -4493,12 +4493,12 @@ bool fil_node_t::read_page0()
 		return false;
 	}
 
-	page_t *page= static_cast<byte*>(aligned_malloc(psize, psize));
+	page_t *page= static_cast<byte*>(my_malloc_aligned(psize, psize));
 	if (os_file_read(IORequestRead, handle, page, 0, psize)
 	    != DB_SUCCESS) {
 		ib::error() << "Unable to read first page of file " << name;
 corrupted:
-		aligned_free(page);
+		my_free_aligned(page);
 		return false;
 	}
 
@@ -4542,7 +4542,7 @@ invalid:
 		space->crypt_data = fil_space_read_crypt_data(
 			fil_space_t::zip_size(flags), page);
 	}
-	aligned_free(page);
+	my_free_aligned(page);
 
 	if (UNIV_UNLIKELY(space_id != space->id)) {
 		ib::error() << "Expected tablespace id " << space->id

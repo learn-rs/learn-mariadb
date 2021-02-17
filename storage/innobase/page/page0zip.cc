@@ -3345,7 +3345,7 @@ page_zip_validate_low(
 
 	/* page_zip_decompress() expects the uncompressed page to be
 	srv_page_size aligned. */
-	page_t* temp_page = static_cast<byte*>(aligned_malloc(srv_page_size,
+	page_t* temp_page = static_cast<byte*>(my_malloc_aligned(srv_page_size,
 							      srv_page_size));
 
 	MEM_CHECK_DEFINED(page, srv_page_size);
@@ -3503,7 +3503,7 @@ func_exit:
 		page_zip_hexdump(page, srv_page_size);
 		page_zip_hexdump(temp_page, srv_page_size);
 	}
-	aligned_free(temp_page);
+	my_free_aligned(temp_page);
 	return(valid);
 }
 

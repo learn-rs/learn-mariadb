@@ -217,8 +217,8 @@ xb_fil_cur_open(
 
 	/* Allocate read buffer */
 	cursor->buf_size = XB_FIL_CUR_PAGES * cursor->page_size;
-	cursor->buf = static_cast<byte*>(aligned_malloc(cursor->buf_size,
-							srv_page_size));
+	cursor->buf = static_cast<byte*>(my_malloc_aligned(cursor->buf_size,
+							   srv_page_size));
 
 	cursor->buf_read = 0;
 	cursor->buf_npages = 0;
@@ -491,7 +491,7 @@ xb_fil_cur_close(
 		cursor->read_filter->deinit(&cursor->read_filter_ctxt);
 	}
 
-	aligned_free(cursor->buf);
+	my_free_aligned(cursor->buf);
 	cursor->buf = NULL;
 
 	if (cursor->node != NULL) {

@@ -507,7 +507,7 @@ void CorruptedPages::zero_out_free_pages()
 {
   container_t non_free_pages;
   byte *zero_page=
-      static_cast<byte *>(aligned_malloc(srv_page_size, srv_page_size));
+      static_cast<byte *>(my_malloc_aligned(srv_page_size, srv_page_size));
   memset(zero_page, 0, srv_page_size);
 
   ut_a(!pthread_mutex_lock(&m_mutex));
@@ -557,7 +557,7 @@ void CorruptedPages::zero_out_free_pages()
   }
   m_spaces.swap(non_free_pages);
   ut_a(!pthread_mutex_unlock(&m_mutex));
-  aligned_free(zero_page);
+  my_free_aligned(zero_page);
 }
 
 /* Simple datasink creation tracking...add datasinks in the reverse order you
@@ -3551,7 +3551,7 @@ static dberr_t xb_assign_undo_space_start()
 	}
 
 	byte* page = static_cast<byte*>
-		(aligned_malloc(srv_page_size, srv_page_size));
+		(my_malloc_aligned(srv_page_size, srv_page_size));
 
 	if (os_file_read(IORequestRead, file, page, 0, srv_page_size)
 	    != DB_SUCCESS) {
@@ -3598,7 +3598,7 @@ retry:
 	srv_undo_space_id_start = space;
 
 func_exit:
-	aligned_free(page);
+	my_free_aligned(page);
 	ret = os_file_close(file);
 	ut_a(ret);
 
@@ -4750,8 +4750,8 @@ xb_space_create_file(
 	}
 
 	/* Align the memory for file i/o if we might have O_DIRECT set */
-	byte* page = static_cast<byte*>(aligned_malloc(2 * srv_page_size,
-						       srv_page_size));
+	byte* page = static_cast<byte*>(my_malloc_aligned(2 * srv_page_size,
+						          srv_page_size));
 
 	memset(page, '\0', srv_page_size);
 
@@ -4786,7 +4786,7 @@ xb_space_create_file(
 				    page_zip.data, 0, zip_size);
 	}
 
-	aligned_free(page);
+	my_free_aligned(page);
 
 	if (ret != DB_SUCCESS) {
 		msg("mariabackup: could not write the first page to %s",
@@ -5084,7 +5084,7 @@ xtrabackup_apply_delta(
 
 	/* allocate buffer for incremental backup (4096 pages) */
 	incremental_buffer = static_cast<byte *>
-		(aligned_malloc(page_size / 4 * page_size, page_size));
+		(my_malloc_aligned(page_size / 4 * page_size, page_size));
 
 	msg("Applying %s to %s...", src_path, dst_path);
 
@@ -5193,7 +5193,7 @@ xtrabackup_apply_delta(
 		incremental_buffers++;
 	}
 
-	aligned_free(incremental_buffer);
+	my_free_aligned(incremental_buffer);
 	if (src_file != OS_FILE_CLOSED) {
 		os_file_close(src_file);
 		os_file_delete(0,src_path);
@@ -5203,7 +5203,7 @@ xtrabackup_apply_delta(
 	return TRUE;
 
 error:
-	aligned_free(incremental_buffer);
+	my_free_aligned(incremental_buffer);
 	if (src_file != OS_FILE_CLOSED)
 		os_file_close(src_file);
 	if (dst_file != OS_FILE_CLOSED && info.space_id)

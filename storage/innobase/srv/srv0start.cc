@@ -515,14 +515,14 @@ static ulint srv_undo_tablespace_open(bool create, const char* name, ulint i)
 
   if (!create)
   {
-    page_t *page= static_cast<byte*>(aligned_malloc(srv_page_size,
+    page_t *page= static_cast<byte*>(my_malloc_aligned(srv_page_size,
                                                     srv_page_size));
     dberr_t err= os_file_read(IORequestRead, fh, page, 0, srv_page_size);
     if (err != DB_SUCCESS)
     {
 err_exit:
       ib::error() << "Unable to read first page of file " << name;
-      aligned_free(page);
+      my_free_aligned(page);
       return err;
     }
 
@@ -546,7 +546,7 @@ err_exit:
 
     space_id= id;
     snprintf(undo_name, sizeof undo_name, "innodb_undo%03u", id);
-    aligned_free(page);
+    my_free_aligned(page);
   }
 
   /* Load the tablespace into InnoDB's internal data structures. */

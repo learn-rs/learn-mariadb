@@ -66,7 +66,7 @@ inline void buf_dblwr_t::init(const byte *header)
   for (int i= 0; i < 2; i++)
   {
     slots[i].write_buf= static_cast<byte*>
-      (aligned_malloc(buf_size << srv_page_size_shift, srv_page_size));
+      (my_malloc_aligned(buf_size << srv_page_size_shift, srv_page_size));
     slots[i].buf_block_arr= static_cast<element*>
       (ut_zalloc_nokey(buf_size * sizeof(element)));
   }
@@ -243,8 +243,8 @@ dberr_t buf_dblwr_t::init_or_load_pages(pfs_os_file_t file, const char *path)
   const uint32_t size= block_size();
 
   /* We do the file i/o past the buffer pool */
-  byte *read_buf= static_cast<byte*>(aligned_malloc(srv_page_size,
-                                                    srv_page_size));
+  byte *read_buf= static_cast<byte*>(my_malloc_aligned(srv_page_size,
+                                                       srv_page_size));
   /* Read the TRX_SYS header to check if we are using the doublewrite buffer */
   dberr_t err= os_file_read(IORequestRead, file, read_buf,
                             TRX_SYS_PAGE_NO << srv_page_size_shift,
@@ -254,7 +254,7 @@ dberr_t buf_dblwr_t::init_or_load_pages(pfs_os_file_t file, const char *path)
   {
     ib::error() << "Failed to read the system tablespace header page";
 func_exit:
-    aligned_free(read_buf);
+    my_free_aligned(read_buf);
     return err;
   }
 
@@ -342,8 +342,8 @@ void buf_dblwr_t::recover()
     return;
 
   uint32_t page_no_dblwr= 0;
-  byte *read_buf= static_cast<byte*>(aligned_malloc(3 * srv_page_size,
-                                                    srv_page_size));
+  byte *read_buf= static_cast<byte*>(my_malloc_aligned(3 * srv_page_size,
+                                                       srv_page_size));
   byte *const buf= read_buf + srv_page_size;
 
   for (recv_dblwr_t::list::iterator i= recv_sys.dblwr.pages.begin();
@@ -438,7 +438,7 @@ next_page:
 
   recv_sys.dblwr.pages.clear();
   fil_flush_file_spaces();
-  aligned_free(read_buf);
+  my_free_aligned(read_buf);
 }
 
 /** Free the doublewrite buffer. */
@@ -455,7 +455,7 @@ void buf_dblwr_t::close()
   pthread_cond_destroy(&cond);
   for (int i= 0; i < 2; i++)
   {
-    aligned_free(slots[i].write_buf);
+    my_free_aligned(slots[i].write_buf);
     ut_free(slots[i].buf_block_arr);
   }
   mysql_mutex_destroy(&mutex);

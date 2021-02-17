@@ -255,7 +255,7 @@ row_fts_psort_info_init(
 			/* Need to align memory for O_DIRECT write */
 			psort_info[j].merge_block[i] =
 				static_cast<row_merge_block_t*>(
-					aligned_malloc(block_size, 1024));
+					my_malloc_aligned(block_size, 1024));
 
 			if (!psort_info[j].merge_block[i]) {
 				ret = FALSE;
@@ -268,7 +268,7 @@ row_fts_psort_info_init(
 				/* Need to align memory for O_DIRECT write */
 				psort_info[j].crypt_block[i] =
 					static_cast<row_merge_block_t*>(
-						aligned_malloc(block_size,
+						my_malloc_aligned(block_size,
 							       1024));
 
 				if (!psort_info[j].crypt_block[i]) {
@@ -327,9 +327,9 @@ row_fts_psort_info_destroy(
 						psort_info[j].merge_file[i]);
 				}
 
-				aligned_free(psort_info[j].merge_block[i]);
+				my_free_aligned(psort_info[j].merge_block[i]);
 				ut_free(psort_info[j].merge_file[i]);
-				aligned_free(psort_info[j].crypt_block[i]);
+				my_free_aligned(psort_info[j].crypt_block[i]);
 			}
 
 			mutex_free(&psort_info[j].mutex);
