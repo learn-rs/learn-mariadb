@@ -5022,6 +5022,7 @@ void st_select_lex::remap_tables(TABLE_LIST *derived, table_map map,
                                  uint tablenr, SELECT_LEX *parent_lex)
 {
   bool first_table= TRUE;
+  bool has_table_function= FALSE;
   TABLE_LIST *tl;
   table_map first_map;
   uint first_tablenr;
@@ -5063,6 +5064,19 @@ void st_select_lex::remap_tables(TABLE_LIST *derived, table_map map,
         emb && emb->select_lex == old_sl;
         emb= emb->embedding)
       emb->select_lex= parent_lex;
+
+    if (tl->table_function)
+      has_table_function= TRUE;
+  }
+
+  if (has_table_function)
+  {
+    ti.rewind();
+    while ((tl= ti++))
+    {
+      if (tl->table_function)
+        tl->table_function->fix_after_pullout(tl, parent_lex, true);
+    }
   }
 }
 
