@@ -19,6 +19,11 @@
 #include "mysys_err.h"
 #include <m_string.h>
 
+#if !defined(HAVE_POSIX_MEMALIGN) && defined(HAVE_MEMALIGN)
+#include <malloc.h>
+#endif
+
+
 struct my_memory_header
 {
   PSI_thread *m_owner;
