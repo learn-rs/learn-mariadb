@@ -265,10 +265,10 @@ char *my_strndup(PSI_memory_key key, const char *from, size_t length, myf my_fla
 */
 void *my_malloc_aligned(size_t size, size_t alignment)
 {
+  void *ptr;
   DBUG_ENTER("my_malloc_aligned");
   DBUG_PRINT("my",("size: %zu align: %zu", size, alignment));
 
-  void *ptr= NULL;
 #ifdef HAVE_POSIX_MEMALIGN
   /* Linux + BSDs */
   if (posix_memalign(& ptr, alignment, size))
