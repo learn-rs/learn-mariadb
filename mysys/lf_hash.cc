@@ -112,7 +112,9 @@ retry:
 
     cur_hashnr= cursor->curr->hashnr;
     cur_keylen= cursor->curr->keylen;
-    cur_key= my_assume_aligned<sizeof(const uchar *)>(cursor->curr->key);
+    /* The key element needs to be aligned, not necessary what it points to */
+    my_assume_aligned<sizeof(const uchar *)>(&cursor->curr->key);
+    cur_key= cursor->curr->key;
 
     do {
       /* attempting to my_assume_aligned onlink below broke the implementation */
