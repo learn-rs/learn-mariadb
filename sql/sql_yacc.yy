@@ -15822,6 +15822,7 @@ keyword_sp_var_and_label:
         | DYNAMIC_SYM
         | ELSEIF_ORACLE_SYM
         | ELSIF_MARIADB_SYM
+        | EMPTY_SYM
         | ENDS_SYM
         | ENGINE_SYM
         | ENGINES_SYM
@@ -15955,6 +15956,7 @@ keyword_sp_var_and_label:
         | PARTIAL
         | PARTITIONING_SYM
         | PARTITIONS_SYM
+        | PATH_SYM
         | PERSISTENT_SYM
         | PHASE_SYM
         | PLUGIN_SYM
@@ -16143,7 +16145,6 @@ reserved_keyword_udt_not_param_type:
         | ELSE
         | ELSEIF_MARIADB_SYM
         | ELSIF_ORACLE_SYM
-        | EMPTY_SYM
         | ENCLOSED
         | ESCAPED
         | EXCEPT_SYM
@@ -16225,7 +16226,6 @@ reserved_keyword_udt_not_param_type:
         | PAGE_CHECKSUM_SYM
         | PARSE_VCOL_EXPR_SYM
         | PARTITION_SYM
-        | PATH_SYM
         | PERCENT_RANK_SYM
         | PERCENTILE_CONT_SYM
         | PERCENTILE_DISC_SYM
